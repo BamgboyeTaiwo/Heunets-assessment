@@ -6,15 +6,17 @@ import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { TextArea } from '@/components/ui/TextArea';
 import { getErrorMessage } from '@/lib/getErrorMessage';
+import { ProjectMember } from '@/features/projects/types';
 import { useCreateTask } from './useTasks';
 import { CreateTaskPayload, TaskPriority } from './types';
 
 interface TaskFormModalProps {
   projectId: string;
+  members: ProjectMember[];
   onClose: () => void;
 }
 
-export function TaskFormModal({ projectId, onClose }: TaskFormModalProps) {
+export function TaskFormModal({ projectId, members, onClose }: TaskFormModalProps) {
   const createTask = useCreateTask(projectId);
   const [serverError, setServerError] = useState<string | null>(null);
   const {
@@ -63,6 +65,23 @@ export function TaskFormModal({ projectId, onClose }: TaskFormModalProps) {
             {(['low', 'medium', 'high'] as TaskPriority[]).map((priority) => (
               <option key={priority} value={priority}>
                 {priority[0].toUpperCase() + priority.slice(1)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="assignee" className="text-sm font-medium text-slate-700">
+            Assignee
+          </label>
+          <select
+            id="assignee"
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            {...register('assignee')}
+          >
+            <option value="">Unassigned</option>
+            {members.map((member) => (
+              <option key={member.id} value={member.id}>
+                {member.name}
               </option>
             ))}
           </select>

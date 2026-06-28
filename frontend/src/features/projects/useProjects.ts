@@ -5,6 +5,7 @@ import { AddMemberPayload, CreateProjectPayload, UpdateProjectPayload } from './
 export const projectsQueryKeys = {
   all: ['projects'] as const,
   detail: (id: string) => ['projects', id] as const,
+  members: (id: string) => ['projects', id, 'members'] as const,
 };
 
 export function useProjects() {
@@ -53,6 +54,17 @@ export function useAddMember(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: AddMemberPayload) => projectsApi.addMember(id, payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: projectsQueryKeys.detail(id) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: projectsQueryKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: projectsQueryKeys.members(id) });
+    },
+  });
+}
+
+export function useProjectMembers(id: string) {
+  return useQuery({
+    queryKey: projectsQueryKeys.members(id),
+    queryFn: () => projectsApi.getMembers(id),
+    enabled: !!id,
   });
 }

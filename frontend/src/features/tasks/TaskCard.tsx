@@ -1,3 +1,4 @@
+import { ProjectMember } from '@/features/projects/types';
 import { TASK_STATUSES, Task, TaskStatus } from './types';
 
 const priorityClasses: Record<Task['priority'], string> = {
@@ -8,13 +9,23 @@ const priorityClasses: Record<Task['priority'], string> = {
 
 interface TaskCardProps {
   task: Task;
+  members: ProjectMember[];
   onStatusChange: (status: TaskStatus) => void;
+  onAssigneeChange: (assignee: string) => void;
   onDelete: () => void;
   isUpdating: boolean;
   isDeleting: boolean;
 }
 
-export function TaskCard({ task, onStatusChange, onDelete, isUpdating, isDeleting }: TaskCardProps) {
+export function TaskCard({
+  task,
+  members,
+  onStatusChange,
+  onAssigneeChange,
+  onDelete,
+  isUpdating,
+  isDeleting,
+}: TaskCardProps) {
   return (
     <div className="rounded-md border border-slate-200 bg-white p-3 shadow-sm">
       <div className="flex items-start justify-between gap-2">
@@ -35,6 +46,20 @@ export function TaskCard({ task, onStatusChange, onDelete, isUpdating, isDeletin
           {TASK_STATUSES.map((status) => (
             <option key={status.value} value={status.value}>
               {status.label}
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label="Task assignee"
+          value={task.assignee ?? ''}
+          disabled={isUpdating}
+          onChange={(event) => onAssigneeChange(event.target.value)}
+          className="rounded-md border border-slate-300 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          <option value="">Unassigned</option>
+          {members.map((member) => (
+            <option key={member.id} value={member.id}>
+              {member.name}
             </option>
           ))}
         </select>

@@ -18,3 +18,9 @@ export type UpdateProjectPayload = Partial<CreateProjectPayload>;
 export interface AddMemberPayload {
   email: string;
 }
+
+export interface ProjectMember {
+  id: string;
+  name: string;
+  email: string;
+}

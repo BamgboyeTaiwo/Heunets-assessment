@@ -1,4 +1,5 @@
 import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
   IsEnum,
   IsISO8601,
@@ -33,10 +34,11 @@ export class CreateTaskDto {
   @IsEnum(TaskPriority)
   priority?: TaskPriority;
 
-  @ApiPropertyOptional({ description: 'User id of the assignee' })
+  @ApiPropertyOptional({ description: 'User id of the assignee, or null/empty to unassign' })
   @IsOptional()
+  @Transform(({ value }) => (value === '' ? null : value))
   @IsMongoId()
-  assignee?: string;
+  assignee?: string | null;
 
   @ApiPropertyOptional({ example: '2026-07-01T00:00:00.000Z' })
   @IsOptional()

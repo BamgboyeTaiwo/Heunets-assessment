@@ -7,13 +7,14 @@ import { TaskFormModal } from '@/features/tasks/TaskFormModal';
 import { getErrorMessage } from '@/lib/getErrorMessage';
 import { useAuth } from '@/features/auth/AuthContext';
 import { AddMemberForm } from './AddMemberForm';
-import { useDeleteProject, useProject } from './useProjects';
+import { useDeleteProject, useProject, useProjectMembers } from './useProjects';
 
 export function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: project, isLoading, isError, error } = useProject(projectId ?? '');
+  const { data: members } = useProjectMembers(projectId ?? '');
   const deleteProject = useDeleteProject();
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
@@ -64,10 +65,14 @@ export function ProjectDetailPage() {
         </div>
       )}
 
-      <TaskBoard projectId={project.id} />
+      <TaskBoard projectId={project.id} members={members ?? []} />
 
       {isTaskModalOpen && (
-        <TaskFormModal projectId={project.id} onClose={() => setIsTaskModalOpen(false)} />
+        <TaskFormModal
+          projectId={project.id}
+          members={members ?? []}
+          onClose={() => setIsTaskModalOpen(false)}
+        />
       )}
     </div>
   );

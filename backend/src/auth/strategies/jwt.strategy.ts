@@ -14,7 +14,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  // Return value is attached to req.user
   validate(payload: JwtPayload): AuthenticatedUser {
     return { userId: payload.sub, email: payload.email };
   }

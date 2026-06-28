@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Task, TaskDocument } from '../tasks/schemas/task.schema';
+import { UserDocument } from '../users/schemas/user.schema';
 import { UsersService } from '../users/users.service';
 import { AddMemberDto } from './dto/add-member.dto';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -31,7 +32,6 @@ export class ProjectsService {
     return this.projectModel.find({ members: id }).sort({ createdAt: -1 }).exec();
   }
 
-  /** Fetches a project and asserts the user is a member, throwing 404/403 otherwise. */
   async findOneForUser(projectId: string, userId: string): Promise<ProjectDocument> {
     const project = await this.findByIdOrThrow(projectId);
     this.assertIsMember(project, userId);
@@ -72,6 +72,11 @@ export class ProjectsService {
     }
 
     return project;
+  }
+
+  async getMembers(projectId: string, userId: string): Promise<UserDocument[]> {
+    const project = await this.findOneForUser(projectId, userId);
+    return this.usersService.findByIds(project.members.map((member) => member.toString()));
   }
 
   private async findByIdOrThrow(projectId: string): Promise<ProjectDocument> {

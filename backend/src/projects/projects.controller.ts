@@ -8,6 +8,7 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { ProjectResponseDto } from './dto/project-response.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { ProjectsService } from './projects.service';
+import { UserResponseDto } from '../users/dto/user-response.dto';
 
 @ApiTags('projects')
 @ApiBearerAuth()
@@ -64,5 +65,12 @@ export class ProjectsController {
   ) {
     const project = await this.projectsService.addMember(id, user.userId, dto);
     return ProjectResponseDto.fromEntity(project);
+  }
+
+  @Get(':id/members')
+  @ApiOperation({ summary: "Get the project's members, for populating an assignee picker" })
+  async getMembers(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    const members = await this.projectsService.getMembers(id, user.userId);
+    return members.map(UserResponseDto.fromEntity);
   }
 }

@@ -11,6 +11,7 @@ describe('TeamBoard API (e2e)', () => {
 
   let accessToken: string;
   let projectId: string;
+  let eveUserId: string;
 
   beforeAll(async () => {
     mongo = await MongoMemoryServer.create();
@@ -127,5 +128,58 @@ describe('TeamBoard API (e2e)', () => {
       .set('Authorization', `Bearer ${eveToken}`);
 
     expect(response.status).toBe(403);
+
+    eveUserId = (
+      await request(app.getHttpServer())
+        .get('/api/auth/me')
+        .set('Authorization', `Bearer ${eveToken}`)
+    ).body.data.id;
+  });
+
+  it('rejects assigning a task to a user who is not a project member', async () => {
+    const response = await request(app.getHttpServer())
+      .post(`/api/projects/${projectId}/tasks`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ title: 'Should fail', assignee: eveUserId });
+
+    expect(response.status).toBe(400);
+  });
+
+  it('lists project members for populating an assignee picker', async () => {
+    const response = await request(app.getHttpServer())
+      .get(`/api/projects/${projectId}/members`)
+      .set('Authorization', `Bearer ${accessToken}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.data).toEqual([
+      expect.objectContaining({ email: 'ada@example.com', name: 'Ada Lovelace' }),
+    ]);
+  });
+
+  it('assigns a task to a project member and then clears the assignee', async () => {
+    const createResponse = await request(app.getHttpServer())
+      .post(`/api/projects/${projectId}/tasks`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ title: 'Write release notes' });
+    const taskId = createResponse.body.data.id;
+
+    const meResponse = await request(app.getHttpServer())
+      .get('/api/auth/me')
+      .set('Authorization', `Bearer ${accessToken}`);
+    const ownAccountId = meResponse.body.data.id;
+
+    const assignResponse = await request(app.getHttpServer())
+      .patch(`/api/projects/${projectId}/tasks/${taskId}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ assignee: ownAccountId });
+    expect(assignResponse.status).toBe(200);
+    expect(assignResponse.body.data.assignee).toBe(ownAccountId);
+
+    const clearResponse = await request(app.getHttpServer())
+      .patch(`/api/projects/${projectId}/tasks/${taskId}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ assignee: '' });
+    expect(clearResponse.status).toBe(200);
+    expect(clearResponse.body.data.assignee).toBeNull();
   });
 });

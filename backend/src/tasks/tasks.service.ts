@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { ProjectDocument } from '../projects/schemas/project.schema';
 import { ProjectsService } from '../projects/projects.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -14,8 +15,10 @@ export class TasksService {
   ) {}
 
   async create(projectId: string, userId: string, dto: CreateTaskDto): Promise<TaskDocument> {
-    // Throws 404/403 if the project doesn't exist or the user isn't a member.
-    await this.projectsService.findOneForUser(projectId, userId);
+    const project = await this.projectsService.findOneForUser(projectId, userId);
+    if (dto.assignee) {
+      this.assertAssigneeIsMember(project, dto.assignee);
+    }
 
     const task = new this.taskModel({
       title: dto.title,
@@ -52,7 +55,7 @@ export class TasksService {
     userId: string,
     dto: UpdateTaskDto,
   ): Promise<TaskDocument> {
-    await this.projectsService.findOneForUser(projectId, userId);
+    const project = await this.projectsService.findOneForUser(projectId, userId);
     const task = await this.findByIdInProjectOrThrow(projectId, taskId);
 
     if (dto.title !== undefined) task.title = dto.title;
@@ -60,6 +63,9 @@ export class TasksService {
     if (dto.status !== undefined) task.status = dto.status;
     if (dto.priority !== undefined) task.priority = dto.priority;
     if (dto.assignee !== undefined) {
+      if (dto.assignee) {
+        this.assertAssigneeIsMember(project, dto.assignee);
+      }
       task.assignee = dto.assignee ? new Types.ObjectId(dto.assignee) : null;
     }
     if (dto.dueDate !== undefined) {
@@ -73,6 +79,13 @@ export class TasksService {
     await this.projectsService.findOneForUser(projectId, userId);
     const task = await this.findByIdInProjectOrThrow(projectId, taskId);
     await task.deleteOne();
+  }
+
+  private assertAssigneeIsMember(project: ProjectDocument, assigneeId: string): void {
+    const isMember = project.members.some((memberId) => memberId.toString() === assigneeId);
+    if (!isMember) {
+      throw new BadRequestException('Assignee must be a member of the project');
+    }
   }
 
   private async findByIdInProjectOrThrow(projectId: string, taskId: string): Promise<TaskDocument> {

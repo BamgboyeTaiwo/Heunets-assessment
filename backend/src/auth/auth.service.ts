@@ -28,11 +28,20 @@ export class AuthService {
     }
 
     const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
-    const user = await this.usersService.create({
-      name: dto.name,
-      email: dto.email,
-      passwordHash,
-    });
+
+    let user;
+    try {
+      user = await this.usersService.create({
+        name: dto.name,
+        email: dto.email,
+        passwordHash,
+      });
+    } catch (err) {
+      if (err && typeof err === 'object' && 'code' in err && err.code === 11000) {
+        throw new ConflictException('An account with this email already exists');
+      }
+      throw err;
+    }
 
     return this.buildAuthResult(user._id.toString(), user.email, UserResponseDto.fromEntity(user));
   }

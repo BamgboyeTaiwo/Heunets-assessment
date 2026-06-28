@@ -1,5 +1,11 @@
 import { ApiEnvelope, apiClient } from '@/services/apiClient';
-import { AddMemberPayload, CreateProjectPayload, Project, UpdateProjectPayload } from './types';
+import {
+  AddMemberPayload,
+  CreateProjectPayload,
+  Project,
+  ProjectMember,
+  UpdateProjectPayload,
+} from './types';
 
 export const projectsApi = {
   async list(): Promise<Project[]> {
@@ -28,6 +34,11 @@ export const projectsApi = {
 
   async addMember(id: string, payload: AddMemberPayload): Promise<Project> {
     const { data } = await apiClient.post<ApiEnvelope<Project>>(`/projects/${id}/members`, payload);
+    return data.data;
+  },
+
+  async getMembers(id: string): Promise<ProjectMember[]> {
+    const { data } = await apiClient.get<ApiEnvelope<ProjectMember[]>>(`/projects/${id}/members`);
     return data.data;
   },
 };

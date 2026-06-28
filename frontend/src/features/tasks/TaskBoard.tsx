@@ -1,14 +1,16 @@
 import { Alert } from '@/components/ui/Alert';
 import { getErrorMessage } from '@/lib/getErrorMessage';
+import { ProjectMember } from '@/features/projects/types';
 import { TaskCard } from './TaskCard';
 import { TASK_STATUSES, TaskStatus } from './types';
 import { useDeleteTask, useTasks, useUpdateTask } from './useTasks';
 
 interface TaskBoardProps {
   projectId: string;
+  members: ProjectMember[];
 }
 
-export function TaskBoard({ projectId }: TaskBoardProps) {
+export function TaskBoard({ projectId, members }: TaskBoardProps) {
   const { data: tasks, isLoading, isError, error } = useTasks(projectId);
   const updateTask = useUpdateTask(projectId);
   const deleteTask = useDeleteTask(projectId);
@@ -31,9 +33,13 @@ export function TaskBoard({ projectId }: TaskBoardProps) {
               <TaskCard
                 key={task.id}
                 task={task}
+                members={members}
                 isUpdating={updateTask.isPending && updateTask.variables?.taskId === task.id}
                 isDeleting={deleteTask.isPending && deleteTask.variables === task.id}
                 onStatusChange={(status) => updateTask.mutate({ taskId: task.id, payload: { status } })}
+                onAssigneeChange={(assignee) =>
+                  updateTask.mutate({ taskId: task.id, payload: { assignee } })
+                }
                 onDelete={() => deleteTask.mutate(task.id)}
               />
             ))}
