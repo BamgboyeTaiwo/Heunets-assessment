@@ -7,6 +7,7 @@ import { TaskFormModal } from '@/features/tasks/TaskFormModal';
 import { getErrorMessage } from '@/lib/getErrorMessage';
 import { useAuth } from '@/features/auth/AuthContext';
 import { AddMemberForm } from './AddMemberForm';
+import { EditProjectModal } from './EditProjectModal';
 import { useDeleteProject, useProject, useProjectMembers } from './useProjects';
 
 export function ProjectDetailPage() {
@@ -17,6 +18,7 @@ export function ProjectDetailPage() {
   const { data: members } = useProjectMembers(projectId ?? '');
   const deleteProject = useDeleteProject();
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   if (!projectId) return null;
   if (isLoading) return <p className="text-sm text-slate-500">Loading project…</p>;
@@ -50,6 +52,11 @@ export function ProjectDetailPage() {
         <div className="flex gap-2">
           <Button onClick={() => setIsTaskModalOpen(true)}>Add task</Button>
           {isOwner && (
+            <Button variant="secondary" onClick={() => setIsEditModalOpen(true)}>
+              Edit project
+            </Button>
+          )}
+          {isOwner && (
             <Button variant="danger" onClick={handleDelete} isLoading={deleteProject.isPending}>
               Delete project
             </Button>
@@ -73,6 +80,10 @@ export function ProjectDetailPage() {
           members={members ?? []}
           onClose={() => setIsTaskModalOpen(false)}
         />
+      )}
+
+      {isEditModalOpen && (
+        <EditProjectModal project={project} onClose={() => setIsEditModalOpen(false)} />
       )}
     </div>
   );
