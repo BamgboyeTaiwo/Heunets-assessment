@@ -6,6 +6,15 @@ React frontend talking to a NestJS API over a clean REST contract.
 Built for the Heunets full-stack assessment. This document covers setup, architecture, and the
 reasoning behind the trade-offs made.
 
+## Live demo
+
+- **Frontend:** https://taiwobamgboye-heunets-assessment.netlify.app
+- **Backend API:** https://heunets-assessment-production.up.railway.app/api
+- **Swagger docs:** https://heunets-assessment-production.up.railway.app/api/docs
+
+Frontend on Netlify, API on Railway, database on MongoDB Atlas. Signup, login, project, and task
+flows are wired end-to-end against this deployment — not just a local-only setup.
+
 ## Stack
 
 | Layer    | Choice                                                            |
