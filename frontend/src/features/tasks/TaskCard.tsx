@@ -1,3 +1,5 @@
+import { useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 import { ProjectMember } from '@/features/projects/types';
 import { TASK_STATUSES, Task, TaskStatus } from './types';
 
@@ -26,10 +28,36 @@ export function TaskCard({
   isUpdating,
   isDeleting,
 }: TaskCardProps) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: task.id,
+  });
+
   return (
-    <div className="rounded-md border border-slate-200 bg-white p-3 shadow-sm">
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Translate.toString(transform) }}
+      className={`rounded-md border border-slate-200 bg-white p-3 shadow-sm transition-shadow ${
+        isDragging ? 'z-10 opacity-60 shadow-md' : ''
+      }`}
+    >
       <div className="flex items-start justify-between gap-2">
-        <h4 className="text-sm font-medium text-slate-900">{task.title}</h4>
+        <button
+          type="button"
+          aria-label="Drag to move task"
+          className="-ml-1 mt-0.5 cursor-grab touch-none rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 active:cursor-grabbing"
+          {...attributes}
+          {...listeners}
+        >
+          <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor" aria-hidden="true">
+            <circle cx="2" cy="2" r="1.5" />
+            <circle cx="8" cy="2" r="1.5" />
+            <circle cx="2" cy="7" r="1.5" />
+            <circle cx="8" cy="7" r="1.5" />
+            <circle cx="2" cy="12" r="1.5" />
+            <circle cx="8" cy="12" r="1.5" />
+          </svg>
+        </button>
+        <h4 className="flex-1 text-sm font-medium text-slate-900">{task.title}</h4>
         <span className={`rounded px-2 py-0.5 text-xs font-medium ${priorityClasses[task.priority]}`}>
           {task.priority}
         </span>
