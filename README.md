@@ -134,7 +134,10 @@ call and any other cross-service side effect.
   (`low` / `medium` / `high`), `project` (ref, required), `assignee` (optional User ref),
   `dueDate`. Tasks are always addressed through their parent project
   (`/projects/:projectId/tasks/...`), which is what makes the membership check a single
-  guaranteed step rather than something each endpoint has to remember to do.
+  guaranteed step rather than something each endpoint has to remember to do. The frontend task
+  board supports drag-and-drop between status columns (`@dnd-kit/core`) in addition to the
+  status/assignee dropdowns, with optimistic UI updates (rolled back on failure) and toast
+  feedback on create/update/delete.
 
 ### Request flow
 
